@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(superpowers:systematic-debugging)",
+      "Bash(node *)",
+      "Bash(npx vitest *)",
+      "Bash(npm run *)",
+      "Bash(npx eslint *)",
+      "Bash(sed -n '140,145p;325,340p' src/lib/__tests__/common-document-serializer.test.ts)",
+      "Bash(sed -n '2005,2030p;2096,2106p' src/lib/__tests__/common-document-serializer.test.ts)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(git add *)",
+      "Bash(git commit -m 'fix OIOUBL root TaxTotal to satisfy 1.17.2 F-LIB404' -m 'The root cac:TaxTotal force-emitted an empty StandardRated subtotal for every *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --base main --head common-document-schematron-fix --title 'Fix OIOUBL serialization to satisfy 1.17.2 F-LIB404' --body ' *)",
+      "Bash(env -u GITHUB_TOKEN gh pr create --base main --head common-document-schematron-fix --title 'Fix OIOUBL serialization to satisfy 1.17.2 F-LIB404' --body ' *)",
+      "Bash(direnv exec *)",
+      "Bash(echo \"lint exit: $?\")",
+      "Bash(git rev-list *)",
+      "Bash(git checkout *)",
+      "Bash(git commit -m 'remove dead rebate branch and tidy comments in serializer' -m 'The totalTaxableNoVat ts-pattern branch matched on totalRebateWithoutVat, a key *)",
+      "Bash(env -u GITHUB_TOKEN gh pr create --base main --head cleanup-common-document-serializer --title 'Remove dead rebate branch and tidy comments in serializer' --body ' *)",
+      "Bash(cd *)",
+      "Bash(env -u GITHUB_TOKEN gh pr merge 330 --merge --delete-branch)",
+      "Skill(superpowers:brainstorming)",
+      "Skill(superpowers:test-driven-development)"
+    ],
+    "defaultMode": "auto"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/dennis/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  },
+  "effortLevel": "xhigh",
+  "theme": "dark",
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true
+}

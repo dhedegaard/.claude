@@ -1,0 +1,19 @@
+# Deny everything by default, then allow the hand-edited config below.
+/*
+
+# Hand-edited config
+!.gitignore
+!CLAUDE.md
+!settings.json
+!statusline-command.sh
+
+# Customizations (skills, custom commands, agents, hooks, output styles)
+!skills/
+!commands/
+!agents/
+!hooks/
+!output-styles/
+
+# Within an allowed directory, ignore common junk
+**/.DS_Store
+**/node_modules/
