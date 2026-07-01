@@ -37,7 +37,13 @@
     "vercel@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "microsoft-docs@claude-plugins-official": true,
-    "azure@claude-plugins-official": true
+    "azure@claude-plugins-official": true,
+    "sentry@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "chrome-devtools-mcp@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true
   },
   "effortLevel": "high",
   "theme": "dark",
