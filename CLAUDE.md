@@ -8,6 +8,10 @@
 
 - Never squash-merge PRs. Preserve the individual commit history — use a regular merge commit (or rebase) instead. When running `gh pr merge`, do not pass `--squash`.
 
+## Docs / plans
+
+- When a feature is done, keep the spec/design docs around but remove the implementation plan (e.g. delete files under a `plans/` dir while leaving `specs/`). Do this as part of finishing the work.
+
 ## Troubleshooting
 
 - If GitHub operations fail (e.g. `gh` commands, pushes, API calls, auth errors), flag a stale/bad `GITHUB_TOKEN` env var as the likely cause. A fresh token can be obtained from the gh CLI (`gh auth token`).
