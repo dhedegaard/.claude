@@ -2,18 +2,6 @@
   "permissions": {
     "allow": [
       "Skill(superpowers:systematic-debugging)",
-      "Bash(node *)",
-      "Bash(npx vitest *)",
-      "Bash(npm run *)",
-      "Bash(npx eslint *)",
-      "Bash(echo \"exit: $?\")",
-      "Bash(git add *)",
-      "Bash(git push *)",
-      "Bash(direnv exec *)",
-      "Bash(echo \"lint exit: $?\")",
-      "Bash(git rev-list *)",
-      "Bash(git checkout *)",
-      "Bash(cd *)",
       "Skill(superpowers:brainstorming)",
       "Skill(superpowers:test-driven-development)"
     ],
