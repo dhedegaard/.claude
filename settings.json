@@ -7,31 +7,7 @@
     ],
     "defaultMode": "auto"
   },
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/dennis/.claude/shellfish-notify.sh claude"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/dennis/.claude/shellfish-notify.sh claude"
-          }
-        ]
-      }
-    ]
-  },
-  "statusLine": {
+ "statusLine": {
     "type": "command",
     "command": "bash /Users/dennis/.claude/statusline-command.sh"
   },
