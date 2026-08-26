@@ -1,5 +1,4 @@
 {
-  "outputStyle": "Concise",
   "permissions": {
     "allow": [
       "Skill(superpowers:systematic-debugging)",
@@ -8,7 +7,7 @@
     ],
     "defaultMode": "auto"
   },
- "statusLine": {
+  "statusLine": {
     "type": "command",
     "command": "bash /Users/dennis/.claude/statusline-command.sh"
   },
@@ -34,9 +33,11 @@
     "csharp-lsp@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true
   },
+  "outputStyle": "Concise",
   "effortLevel": "high",
   "theme": "dark",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "remoteControlAtStartup": true
 }
