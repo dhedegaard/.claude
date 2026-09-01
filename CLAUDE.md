@@ -3,6 +3,8 @@
 ## Project setup
 
 - When working in a project (or subdirectory) that has no `CLAUDE.md` file, remind me that one is missing so I can decide whether to create one.
+- npm is the default package manager, but an existing project's convention wins — check the lockfile before running anything.
+- Expect lint, typecheck and test scripts in `package.json`; use them to verify work rather than inventing commands. If one is missing, tell me instead of working around it.
 
 ## Code style
 
