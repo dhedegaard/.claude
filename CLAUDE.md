@@ -13,6 +13,7 @@
 ## TypeScript
 
 - Explicit, strict types. Never `any` — use `unknown` plus narrowing when the type genuinely isn't known.
+- In new code, import zod as a namespace — `import * as z from 'zod'` — not `import { z } from 'zod'`; it's tree-shaking friendly, so bundlers can drop the unused parts. Leave existing imports alone.
 - Always validate data at a runtime boundary — user input, other systems, integrations, the database, env, parsed files — with zod. A hand-written type on unvalidated data is a lie the compiler can't catch; parse it so the type is earned.
 - Derive types from the zod schema with `z.infer` rather than declaring the schema and the type separately — one source of truth, no drift.
 - For object schemas, infer to an interface — `interface User extends z.infer<typeof userSchema> {}` — not a type alias. Better error messages, and it stays declaration-mergeable/extendable. Falls back to a type alias where TS won't let an interface extend the inferred type — unions, intersections (`.and()`), index signatures, `z.record`.
