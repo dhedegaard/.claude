@@ -21,6 +21,7 @@
 
 ## Git / PRs
 
+- When a PR review comment is handled (Copilot's included), reply on that thread with what changed and the commit sha, then resolve it. Replying is `gh api repos/<o>/<r>/pulls/<n>/comments/<id>/replies`; resolving is GraphQL only — `resolveReviewThread` with the thread id from `pullRequest.reviewThreads`, which REST cannot do.
 - Never squash-merge PRs. Preserve the individual commit history — use a regular merge commit (or rebase) instead. When running `gh pr merge`, do not pass `--squash`.
 
 ## Docs / plans
