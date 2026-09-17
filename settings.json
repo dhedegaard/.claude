@@ -3,7 +3,8 @@
     "allow": [
       "Skill(superpowers:systematic-debugging)",
       "Skill(superpowers:brainstorming)",
-      "Skill(superpowers:test-driven-development)"
+      "Skill(superpowers:test-driven-development)",
+      "Bash(gh pr merge:*)"
     ],
     "defaultMode": "auto"
   },
