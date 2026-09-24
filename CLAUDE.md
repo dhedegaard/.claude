@@ -51,3 +51,6 @@
 - An **unquoted** heredoc (`python3 - <<PY`) command-substitutes backticks in its body, so an edit script containing a markdown `` `snippet` `` silently loses it or dies with "command not found". Always quote the delimiter: `<<'PY'`.
 - A `\u0000`-style escape written inside a heredoc becomes a **real control character** in the tool call, and the Bash tool refuses the whole command ("command contains control characters"). Use the Write tool for that file, or build the character in code (`String.fromCharCode(0)`).
 - Neither `timeout` nor `gtimeout` is installed on this machine (`command not found`), so a command needing a deadline must carry its own (`curl --max-time`, `AbortSignal.timeout`, the Bash tool's `timeout` param). BSD `cat` also has no `-A`.
+- An unmatched glob aborts the whole command in zsh (`no matches found`), so `rm -f "$dir"/*.png && …` dies when no PNGs exist and the rest of the `&&` chain never runs. Use `find "$dir" -name '*.png' -delete`.
+- `?` is a glob too: an unquoted URL with a query string (`for u in https://…?lang=da`) dies with `no matches found`. Single-quote URLs.
+- zsh treats `:r`, `:h`, `:t`, `:e` after a bare `$var` as filename modifiers, so `git push origin "$sha:refs/heads/main"` silently mangles the refspec (`…efs/heads/main does not match any`). Brace it: `"${sha}:refs/heads/main"`.
