@@ -24,6 +24,7 @@
 - I often edit files in the same repo while you work. Inspect existing staged changes before staging explicit paths (`git add <path> …`), never `git add -A`. If we edited the same file, stage only your intended hunks. Review the staged diff before committing; keep unrelated edits out of your commit and preserve my staging choices.
 - When a PR review comment is handled (Copilot's included), reply on that thread with what changed and the commit sha, then resolve it. Replying is `gh api repos/<o>/<r>/pulls/<n>/comments/<id>/replies`; resolving is GraphQL only — `resolveReviewThread` with the thread id from `pullRequest.reviewThreads`, which REST cannot do.
 - Never squash-merge PRs. Preserve the individual commit history — use a regular merge commit (or rebase) instead. When running `gh pr merge`, do not pass `--squash`.
+- When I ask you to merge a PR, merge it — that is my authorization, even when `main` auto-deploys. Run `gh pr merge` as its own Bash command, never chained with `;` or `&&`, so the `Bash(gh pr merge:*)` allow rule matches.
 
 ## Worktrees
 
