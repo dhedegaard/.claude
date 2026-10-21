@@ -17,3 +17,7 @@
 # Within an allowed directory, ignore common junk
 **/.DS_Store
 **/node_modules/
+**/.trash
+
+skills/synced
+
