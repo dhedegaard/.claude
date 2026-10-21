@@ -25,6 +25,7 @@
 - When a PR review comment is handled (Copilot's included), reply on that thread with what changed and the commit sha, then resolve it. Replying is `gh api repos/<o>/<r>/pulls/<n>/comments/<id>/replies`; resolving is GraphQL only — `resolveReviewThread` with the thread id from `pullRequest.reviewThreads`, which REST cannot do.
 - Never squash-merge PRs. Preserve the individual commit history — use a regular merge commit (or rebase) instead. When running `gh pr merge`, do not pass `--squash`.
 - When I ask you to merge a PR, merge it — that is my authorization, even when `main` auto-deploys. Run `gh pr merge` as its own Bash command, never chained with `;` or `&&`, so the `Bash(gh pr merge:*)` allow rule matches.
+- To commit a file onto `main` while a feature branch is checked out (no checkout, no worktree): `GIT_INDEX_FILE=<tmp> git read-tree main`, `git hash-object -w <file>` + `update-index --cacheinfo 100644,<blob>,<path>`, `write-tree`, `commit-tree <tree> -p main`, push `<sha>:refs/heads/main`, then `git update-ref refs/heads/main <sha> <old>`. Only valid when the file's base on `main` is what you edited — otherwise build it from `git show main:<path>`.
 
 ## Worktrees
 
@@ -41,6 +42,7 @@
 ## Troubleshooting
 
 - For GitHub authentication failures, check for stale/bad `GH_TOKEN` or `GITHUB_TOKEN` overrides; `GH_TOKEN` takes precedence. Check stored credentials with `env -u GH_TOKEN -u GITHUB_TOKEN gh auth status`. `gh auth token` retrieves the current token, not a fresh one, and can return the same bad override. Do not print tokens in tool output. Diagnose other GitHub failures from their actual errors.
+- In `digisense-connector`, the tool shell's exported `GH_TOKEN` lacks access to `DIGISENSE-AS/digisense-connector` (`gh pr create` fails with "Could not resolve to a Repository"; `git push` works over SSH). Run `gh` as `env -u GH_TOKEN -u GITHUB_TOKEN gh …` to use the keyring login. Keep `GH_TOKEN` exported only for `npm pack`/`npm install` against GitHub Packages.
 
 ## Shell
 
@@ -56,3 +58,8 @@
 - zsh does not word-split unquoted `$var`: `F="a.ts b.ts"; npx eslint $F` passes ONE path ("No files matching the pattern"). Use an array — `F=(a.ts b.ts); npx eslint "${F[@]}"`.
 - `?` is a glob too: an unquoted URL with a query string (`for u in https://…?lang=da`) dies with `no matches found`. Single-quote URLs.
 - zsh treats `:r`, `:h`, `:t`, `:e` after a bare `$var` as filename modifiers, so `git push origin "$sha:refs/heads/main"` silently mangles the refspec (`…efs/heads/main does not match any`). Brace it: `"${sha}:refs/heads/main"`.
+- In zsh, `local var` on a name already set in that scope **prints** `var=value` instead of redeclaring silently, so a loop that re-runs `local x; x=$(…)` leaks lines into the output. Declare locals once, before the loop.
+
+## Subagents
+
+- `feature-dev:code-reviewer` has no Bash: it cannot run `git diff` or tests. For a review that must read a branch diff or run tests, use `general-purpose`, or paste the diff into the prompt.
