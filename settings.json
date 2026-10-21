@@ -35,6 +35,7 @@
     "claude-code-setup@claude-plugins-official": true
   },
   "outputStyle": "Concise",
+  "feedbackDrafts": "off",
   "effortLevel": "high",
   "theme": "dark",
   "inputNeededNotifEnabled": true,
