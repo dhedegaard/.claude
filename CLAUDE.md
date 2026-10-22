@@ -47,6 +47,7 @@
 ## Shell
 
 - Avoid special shell variables as scratch variables; use task-specific names. In zsh, `status` is read-only, and assigning to `path` changes `PATH`, potentially breaking command lookup. Other special variables such as `argv` and `pipestatus` also have shell-defined meanings.
+- Short names like `c` may be aliases in the tool shell. Defining a function with one (`c() { … }`) fails with `defining function based on alias`. Use descriptive function names, or put the script in a file and run it with `bash`.
 - zsh expands a leading `=` in a word (`=cmd` → command path), so `echo ===` fails with `(eval):1: == not found`. Quote separators: `echo "---"`.
 - `grep`'s `--include`/`--exclude` globs must be quoted (`--include='*.ts'`). Unquoted, zsh tries to expand them and the command dies with `(eval):1: no matches found: --include=*.ts`.
 - A heredoc after a pipe feeds the **last** command in the pipeline: `gh pr create --body-file - 2>&1 | tail -3 <<'BODY'` gives the body to `tail`, leaving `gh` waiting on stdin until it times out. Write the body to a file and pass its path.
