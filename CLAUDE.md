@@ -18,6 +18,7 @@
 - Derive types from the zod schema with `z.infer` rather than declaring the schema and the type separately — one source of truth, no drift.
 - For object schemas, infer to an interface — `interface User extends z.infer<typeof userSchema> {}` — not a type alias. Better error messages, and it stays declaration-mergeable/extendable. Falls back to a type alias where TS won't let an interface extend the inferred type — unions, intersections (`.and()`), index signatures, `z.record`.
 - In new code, model failure in the return type — a union or discriminated union (e.g. `{ ok: true, value } | { ok: false, error }`), or zod's `safeParse` — rather than throwing. Errors then show up in the types and the compiler forces the caller to handle them, instead of hiding in a `throw` no signature mentions. In a codebase that already throws, match it — one consistent convention beats a better one applied halfway.
+- Put `satisfies <Type>` on object literals you assemble and return, push or pass on — every arm of a `match`, an early return, a task event — even when the signature already declares the type. It checks each literal against its own type, so an excess or misspelled property fails at that spot instead of passing as part of a wider union. For a discriminated union, satisfy the specific member (name each member as its own interface), not the whole union.
 
 ## Git / PRs
 
@@ -26,6 +27,7 @@
 - Never squash-merge PRs. Preserve the individual commit history — use a regular merge commit (or rebase) instead. When running `gh pr merge`, do not pass `--squash`.
 - When I ask you to merge a PR, merge it — that is my authorization, even when `main` auto-deploys. Run `gh pr merge` as its own Bash command, never chained with `;` or `&&`, so the `Bash(gh pr merge:*)` allow rule matches.
 - To commit a file onto `main` while a feature branch is checked out (no checkout, no worktree): `GIT_INDEX_FILE=<tmp> git read-tree main`, `git hash-object -w <file>` + `update-index --cacheinfo 100644,<blob>,<path>`, `write-tree`, `commit-tree <tree> -p main`, push `<sha>:refs/heads/main`, then `git update-ref refs/heads/main <sha> <old>`. Only valid when the file's base on `main` is what you edited — otherwise build it from `git show main:<path>`.
+- Never chain `git commit --amend` after another git command in one line (`git revert … && git commit --amend`, or with `;`): if the first step makes no commit, the amend rewrites the one before. Run it separately, after checking `git log -1`.
 
 ## Worktrees
 
@@ -43,6 +45,7 @@
 
 - For GitHub authentication failures, check for stale/bad `GH_TOKEN` or `GITHUB_TOKEN` overrides; `GH_TOKEN` takes precedence. Check stored credentials with `env -u GH_TOKEN -u GITHUB_TOKEN gh auth status`. `gh auth token` retrieves the current token, not a fresh one, and can return the same bad override. Do not print tokens in tool output. Diagnose other GitHub failures from their actual errors.
 - In `digisense-connector`, the tool shell's exported `GH_TOKEN` lacks access to `DIGISENSE-AS/digisense-connector` (`gh pr create` fails with "Could not resolve to a Repository"; `git push` works over SSH). Run `gh` as `env -u GH_TOKEN -u GITHUB_TOKEN gh …` to use the keyring login. Keep `GH_TOKEN` exported only for `npm pack`/`npm install` against GitHub Packages.
+- `gh pr merge` failing with "refusing to allow an OAuth App to create or update workflow … without `workflow` scope": the keyring token has only `repo`, and the PR changes a workflow file that also changed on the base since it branched, so GitHub would have to write the merged file. Merge the base into the branch locally, push over SSH, let CI pass, then merge again. (`gh auth refresh -s workflow` adds the scope instead, but needs a browser login.)
 
 ## Shell
 
@@ -59,6 +62,7 @@
 - `?` is a glob too: an unquoted URL with a query string (`for u in https://…?lang=da`) dies with `no matches found`. Single-quote URLs.
 - zsh treats `:r`, `:h`, `:t`, `:e` after a bare `$var` as filename modifiers, so `git push origin "$sha:refs/heads/main"` silently mangles the refspec (`…efs/heads/main does not match any`). Brace it: `"${sha}:refs/heads/main"`.
 - In zsh, `local var` on a name already set in that scope **prints** `var=value` instead of redeclaring silently, so a loop that re-runs `local x; x=$(…)` leaks lines into the output. Declare locals once, before the loop.
+- Under `bash -e` (GitHub Actions' default `run:` shell), a failure anywhere in an `&&` list except the last command does not stop the script: `test -n "$a" && test -n "$b"` lets an empty `$a` through. Put one guard per line.
 
 ## Subagents
 
