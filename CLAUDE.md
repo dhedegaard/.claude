@@ -13,7 +13,9 @@
 ## TypeScript
 
 - Explicit, strict types. Never `any` — use `unknown` plus narrowing when the type genuinely isn't known.
-- In new code, import zod as a namespace — `import * as z from 'zod'` — not `import { z } from 'zod'`; it's tree-shaking friendly, so bundlers can drop the unused parts. Leave existing imports alone.
+- Import zod as a namespace — `import * as z from 'zod'` (`import type * as z` for type-only) — never `import { z }` or a default import. esbuild can't tree-shake the named form, and Turbopack ships every zod locale to the client unless all client-reachable imports are namespace imports.
+- Namespace imports alone don't keep the locales out. Runtime `z.core.*` (e.g. `instanceof z.core.$ZodError`) or `z.locales.*` access and `import { da } from 'zod/locales'` pull in all of them. Use `import * as core from 'zod/v4/core'`, and `import da from 'zod/v4/locales/da.js'` with `z.config(da())`. Type-only `z.core.$ZodType` is fine. Enforce it with an ESLint `no-restricted-syntax` rule.
+- A library built with tsdown/rolldown needs `outputOptions: { minifyInternalExports: false }`: a minified shared-chunk export that happens to share its name with the chunk's zod binding makes Turbopack bundle the whole zod namespace into consumers. To check a Next app, `grep -rl 'Ungültig' .next/static/chunks` should find nothing.
 - Always validate data at a runtime boundary — user input, other systems, integrations, the database, env, parsed files — with zod. A hand-written type on unvalidated data is a lie the compiler can't catch; parse it so the type is earned.
 - Derive types from the zod schema with `z.infer` rather than declaring the schema and the type separately — one source of truth, no drift.
 - For object schemas, infer to an interface — `interface User extends z.infer<typeof userSchema> {}` — not a type alias. Better error messages, and it stays declaration-mergeable/extendable. Falls back to a type alias where TS won't let an interface extend the inferred type — unions, intersections (`.and()`), index signatures, `z.record`.
@@ -65,6 +67,7 @@
 - In zsh, `local var` on a name already set in that scope **prints** `var=value` instead of redeclaring silently, so a loop that re-runs `local x; x=$(…)` leaks lines into the output. Declare locals once, before the loop.
 - Under `bash -e` (GitHub Actions' default `run:` shell), a failure anywhere in an `&&` list except the last command does not stop the script: `test -n "$a" && test -n "$b"` lets an empty `$a` through. Put one guard per line.
 - `git grep -E` has no `\b`: a pattern using it silently matches nothing. Use `-w` for whole words, or `([^A-Za-z]|$)` as the boundary.
+- zsh-only parameter expansion (`${=var}`, `${(@f)$(…)}`) makes the Bash tool's safety check refuse the command as unparseable ("could not be checked for dangerous rm operations"). Use plain loops, `bash -c '…'`, or `git diff --name-only -z | xargs -0 git add --`.
 
 ## Subagents
 
