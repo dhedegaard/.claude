@@ -44,7 +44,7 @@
 ## Troubleshooting
 
 - For GitHub authentication failures, check for stale/bad `GH_TOKEN` or `GITHUB_TOKEN` overrides; `GH_TOKEN` takes precedence. Check stored credentials with `env -u GH_TOKEN -u GITHUB_TOKEN gh auth status`. `gh auth token` retrieves the current token, not a fresh one, and can return the same bad override. Do not print tokens in tool output. Diagnose other GitHub failures from their actual errors.
-- In `digisense-connector`, the tool shell's exported `GH_TOKEN` lacks access to `DIGISENSE-AS/digisense-connector` (`gh pr create` fails with "Could not resolve to a Repository"; `git push` works over SSH). Run `gh` as `env -u GH_TOKEN -u GITHUB_TOKEN gh …` to use the keyring login. Keep `GH_TOKEN` exported only for `npm pack`/`npm install` against GitHub Packages.
+- The tool shell's `GH_TOKEN` is a stale override (seen 2026-10-29): plain `gh` fails with errors that look like a missing repository ("Could not resolve to a Repository"), while the keyring login works. Run every `gh` command as `env -u GH_TOKEN -u GITHUB_TOKEN gh …` from the start. `git push` over SSH is unaffected.
 - `gh pr merge` failing with "refusing to allow an OAuth App to create or update workflow … without `workflow` scope": the keyring token has only `repo`, and the PR changes a workflow file that also changed on the base since it branched, so GitHub would have to write the merged file. Merge the base into the branch locally, push over SSH, let CI pass, then merge again. (`gh auth refresh -s workflow` adds the scope instead, but needs a browser login.)
 
 ## Shell
@@ -64,6 +64,7 @@
 - zsh treats `:r`, `:h`, `:t`, `:e` after a bare `$var` as filename modifiers, so `git push origin "$sha:refs/heads/main"` silently mangles the refspec (`…efs/heads/main does not match any`). Brace it: `"${sha}:refs/heads/main"`.
 - In zsh, `local var` on a name already set in that scope **prints** `var=value` instead of redeclaring silently, so a loop that re-runs `local x; x=$(…)` leaks lines into the output. Declare locals once, before the loop.
 - Under `bash -e` (GitHub Actions' default `run:` shell), a failure anywhere in an `&&` list except the last command does not stop the script: `test -n "$a" && test -n "$b"` lets an empty `$a` through. Put one guard per line.
+- `git grep -E` has no `\b`: a pattern using it silently matches nothing. Use `-w` for whole words, or `([^A-Za-z]|$)` as the boundary.
 
 ## Subagents
 
