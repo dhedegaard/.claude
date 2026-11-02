@@ -69,6 +69,8 @@
 - Under `bash -e` (GitHub Actions' default `run:` shell), a failure anywhere in an `&&` list except the last command does not stop the script: `test -n "$a" && test -n "$b"` lets an empty `$a` through. Put one guard per line.
 - `git grep -E` has no `\b`: a pattern using it silently matches nothing. Use `-w` for whole words, or `([^A-Za-z]|$)` as the boundary.
 - zsh-only parameter expansion (`${=var}`, `${(@f)$(…)}`) makes the Bash tool's safety check refuse the command as unparseable ("could not be checked for dangerous rm operations"). Use plain loops, `bash -c '…'`, or `git diff --name-only -z | xargs -0 git add --`.
+- `${PIPESTATUS[0]}` is empty in zsh, so an exit code checked through a pipe reads as blank. Run the command unpiped (`cmd >/dev/null 2>&1; echo "x=$?"`).
+- Bash calls sent in the same response can share a working directory, so a `cd` in one can leak into the other. Use `git -C`/absolute paths, or run per-repo commands one after another.
 
 ## Subagents
 
