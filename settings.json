@@ -38,8 +38,8 @@
   "feedbackDrafts": "off",
   "effortLevel": "high",
   "theme": "dark",
+  "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "remoteControlAtStartup": true
+  "skipAutoPermissionPrompt": true
 }
