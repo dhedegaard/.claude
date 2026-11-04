@@ -26,9 +26,13 @@
 
 - I often edit files in the same repo while you work. Inspect existing staged changes before staging explicit paths (`git add <path> …`), never `git add -A`. If we edited the same file, stage only your intended hunks. Review the staged diff before committing; keep unrelated edits out of your commit and preserve my staging choices.
 - When a PR review comment is handled (Copilot's included), reply on that thread with what changed and the commit sha, then resolve it. Replying is `gh api repos/<o>/<r>/pulls/<n>/comments/<id>/replies`; resolving is GraphQL only — `resolveReviewThread` with the thread id from `pullRequest.reviewThreads`, which REST cannot do.
+- To request a fresh Copilot review (e.g. after pushing fixes): `gh pr edit <n> --add-reviewer "@copilot"`. `requested_reviewers` won't list it; the PR timeline's `review_requested` event confirms it. It does nothing while an earlier request is still pending (no new `review_requested` event), and the timeline API is paginated, so check it with `gh api --paginate …/timeline`. A Copilot verdict may cover an older commit: compare the review's `commit_id` on `…/pulls/<n>/reviews` with the head before acting on it.
+- Copilot's review counts as the required approval on DIGISENSE-AS repos: its verdict "🟢 Approved" is submitted as `APPROVED`, while "🔵 Needs a closer look" is only `COMMENTED`. To get an approval, address its concern (or, for dependency PRs, state in the PR body why each risky move is safe), then re-request a Copilot review. Check `gh pr view <n> --json reviewDecision`.
 - Never squash-merge PRs. Preserve the individual commit history — use a regular merge commit (or rebase) instead. When running `gh pr merge`, do not pass `--squash`.
 - When I ask you to merge a PR, merge it — that is my authorization, even when `main` auto-deploys. Run `gh pr merge` as its own Bash command, never chained with `;` or `&&`, so the `Bash(gh pr merge:*)` allow rule matches.
 - To commit a file onto `main` while a feature branch is checked out (no checkout, no worktree): `GIT_INDEX_FILE=<tmp> git read-tree main`, `git hash-object -w <file>` + `update-index --cacheinfo 100644,<blob>,<path>`, `write-tree`, `commit-tree <tree> -p main`, push `<sha>:refs/heads/main`, then `git update-ref refs/heads/main <sha> <old>`. Only valid when the file's base on `main` is what you edited — otherwise build it from `git show main:<path>`.
+- `git push` failing with `cannot lock ref 'refs/heads/<b>': is at <X> but expected <Y>` can mean the push itself landed. Run `git fetch` and compare `git rev-parse HEAD` with `origin/<b>` before retrying; never force-push over it.
+- Copilot reviews the PR description too, and flags it when it disagrees with the diff. When a docs or design PR changes substance, update the body in the same pass, before re-requesting review.
 - Never chain `git commit --amend` after another git command in one line (`git revert … && git commit --amend`, or with `;`): if the first step makes no commit, the amend rewrites the one before. Run it separately, after checking `git log -1`.
 
 ## Worktrees
@@ -42,6 +46,7 @@
 ## Dev servers / processes
 
 - Never kill dev servers by name pattern (`pkill -f next` and friends) — I run several projects at once and it takes them all down. Find the listening process with `lsof -nP -iTCP:<port> -sTCP:LISTEN`, verify it belongs to the intended server, then kill that specific PID.
+- Never edit `.envrc` in any project — only I change it. Reading it is fine. When a task needs a different env (prod vs test vs localhost), tell me what it must point at and wait for me to switch it.
 
 ## Troubleshooting
 
