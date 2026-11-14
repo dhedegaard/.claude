@@ -41,5 +41,26 @@
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "model": "opus",
+  "skillOverrides": {
+    "docker-expert": "off",
+    "prisma-database-setup": "off",
+    "tailwind-design-system": "off",
+    "web-design-guidelines": "off",
+    "frontend-design": "off",
+    "anthropic-skills:docx": "off",
+    "anthropic-skills:pptx": "off",
+    "anthropic-skills:xlsx": "off",
+    "anthropic-skills:pdf": "off",
+    "anthropic-skills:docs": "off",
+    "anthropic-skills:google-workspace": "off",
+    "anthropic-skills:morning": "off",
+    "anthropic-skills:import-memory": "off",
+    "anthropic-skills:deep-research": "off",
+    "anthropic-skills:skill-creator": "off",
+    "anthropic-skills:computer-use": "off",
+    "anthropic-skills:chrome-browser": "off",
+    "microsoft-foundry": "off"
+  }
 }
