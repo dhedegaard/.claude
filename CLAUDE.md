@@ -2,7 +2,7 @@
 
 ## Project setup
 
-- Check for applicable project instructions, including those inherited from parent directories. Use `AGENTS.md`, falling back to `CLAUDE.md` if absent. If neither applies, remind me so I can decide whether to create one.
+- Check for applicable project instructions, including those inherited from parent directories. Use `AGENTS.md`, falling back to `CLAUDE.md` if absent; an `AGENTS.md` that only holds Next's generated `nextjs-agent-rules` block doesn't count, so read `CLAUDE.md` too. If neither applies, remind me so I can decide whether to create one.
 - npm is the default package manager, but an existing project's convention wins — check the lockfile before running anything.
 - Expect lint, typecheck and test scripts in `package.json`; use them to verify work rather than inventing commands. If one is missing, tell me instead of working around it.
 
@@ -55,6 +55,8 @@
 - For GitHub authentication failures, check for stale/bad `GH_TOKEN` or `GITHUB_TOKEN` overrides; `GH_TOKEN` takes precedence. Check stored credentials with `env -u GH_TOKEN -u GITHUB_TOKEN gh auth status`. `gh auth token` retrieves the current token, not a fresh one, and can return the same bad override. Do not print tokens in tool output. Diagnose other GitHub failures from their actual errors.
 - The tool shell's `GH_TOKEN` is a stale override (seen 2026-10-29): plain `gh` fails with errors that look like a missing repository ("Could not resolve to a Repository"), while the keyring login works. Run every `gh` command as `env -u GH_TOKEN -u GITHUB_TOKEN gh …` from the start. `git push` over SSH is unaffected.
 - `gh pr merge` failing with "refusing to allow an OAuth App to create or update workflow … without `workflow` scope": the keyring token has only `repo`, and the PR changes a workflow file that also changed on the base since it branched, so GitHub would have to write the merged file. Merge the base into the branch locally, push over SSH, let CI pass, then merge again. (`gh auth refresh -s workflow` adds the scope instead, but needs a browser login.)
+- A scratch script outside a repo can't `require` that repo's packages (`MODULE_NOT_FOUND`); run it with `NODE_PATH=<repo>/node_modules node <script>` rather than installing them in the scratch dir.
+- To inspect a downloaded or untrusted `.git`, read its `config`/`hooks` first and run git as `GIT_CONFIG_NOSYSTEM=1 git --git-dir=<dir> -c core.hooksPath=/dev/null -c core.fsmonitor= …` (an array in zsh), so its config can't execute anything.
 
 ## Shell
 
