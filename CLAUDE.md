@@ -31,7 +31,6 @@
 - Copilot's review counts as the required approval on DIGISENSE-AS repos: its verdict "🟢 Approved" is submitted as `APPROVED`, while "🔵 Needs a closer look" is only `COMMENTED`. To get an approval, address its concern (or, for dependency PRs, state in the PR body why each risky move is safe), then re-request a Copilot review. Check `gh pr view <n> --json reviewDecision`.
 - Never squash-merge PRs. Preserve the individual commit history — use a regular merge commit (or rebase) instead. When running `gh pr merge`, do not pass `--squash`.
 - When I ask you to merge a PR, merge it — that is my authorization, even when `main` auto-deploys. Run `gh pr merge` as its own Bash command, never chained with `;` or `&&`, so the `Bash(gh pr merge:*)` allow rule matches.
-- To commit a file onto `main` while a feature branch is checked out (no checkout, no worktree): `GIT_INDEX_FILE=<tmp> git read-tree main`, `git hash-object -w <file>` + `update-index --cacheinfo 100644,<blob>,<path>`, `write-tree`, `commit-tree <tree> -p main`, push `<sha>:refs/heads/main`, then `git update-ref refs/heads/main <sha> <old>`. Only valid when the file's base on `main` is what you edited — otherwise build it from `git show main:<path>`.
 - `git push` failing with `cannot lock ref 'refs/heads/<b>': is at <X> but expected <Y>` can mean the push itself landed. Run `git fetch` and compare `git rev-parse HEAD` with `origin/<b>` before retrying; never force-push over it.
 - Copilot reviews the PR description too, and flags it when it disagrees with the diff. When a docs or design PR changes substance, update the body in the same pass, before re-requesting review.
 - Never chain `git commit --amend` after another git command in one line (`git revert … && git commit --amend`, or with `;`): if the first step makes no commit, the amend rewrites the one before. Run it separately, after checking `git log -1`.
@@ -51,32 +50,19 @@
 
 ## Troubleshooting
 
-- Playwright MCP needs `/Applications/Google Chrome.app`, which isn't installed. For headless browser checks, use the `playwright` npm package in a scratch dir with `chromium.launch({ executablePath })` pointing at the cached `~/Library/Caches/ms-playwright/chromium_headless_shell-*/…/chrome-headless-shell`, since the package's own browser revision may not match the cache.
-- For GitHub authentication failures, check for stale/bad `GH_TOKEN` or `GITHUB_TOKEN` overrides; `GH_TOKEN` takes precedence. Check stored credentials with `env -u GH_TOKEN -u GITHUB_TOKEN gh auth status`. `gh auth token` retrieves the current token, not a fresh one, and can return the same bad override. Do not print tokens in tool output. Diagnose other GitHub failures from their actual errors.
+- Fixes for loud failures (zsh errors, missing `timeout`/`gsed`, `MODULE_NOT_FOUND` in scratch scripts, GitHub auth and workflow-scope merge errors, Playwright/Chrome, checks under another Node, committing onto `main` without checkout) live in the `machine-troubleshooting` skill — load it when one of those comes up.
 - The tool shell's `GH_TOKEN` is a stale override (seen 2026-10-29): plain `gh` fails with errors that look like a missing repository ("Could not resolve to a Repository"), while the keyring login works. Run every `gh` command as `env -u GH_TOKEN -u GITHUB_TOKEN gh …` from the start. `git push` over SSH is unaffected.
-- `gh pr merge` failing with "refusing to allow an OAuth App to create or update workflow … without `workflow` scope": the keyring token has only `repo`, and the PR changes a workflow file that also changed on the base since it branched, so GitHub would have to write the merged file. Merge the base into the branch locally, push over SSH, let CI pass, then merge again. (`gh auth refresh -s workflow` adds the scope instead, but needs a browser login.)
-- A scratch script outside a repo can't `require` that repo's packages (`MODULE_NOT_FOUND`); run it with `NODE_PATH=<repo>/node_modules node <script>` rather than installing them in the scratch dir.
 - To inspect a downloaded or untrusted `.git`, read its `config`/`hooks` first and run git as `GIT_CONFIG_NOSYSTEM=1 git --git-dir=<dir> -c core.hooksPath=/dev/null -c core.fsmonitor= …` (an array in zsh), so its config can't execute anything.
 
 ## Shell
 
 - Avoid special shell variables as scratch variables; use task-specific names. In zsh, `status` is read-only, and assigning to `path` changes `PATH`, potentially breaking command lookup. Other special variables such as `argv` and `pipestatus` also have shell-defined meanings.
-- Short names like `c` may be aliases in the tool shell. Defining a function with one (`c() { … }`) fails with `defining function based on alias`. Use descriptive function names, or put the script in a file and run it with `bash`.
-- zsh expands a leading `=` in a word (`=cmd` → command path), so `echo ===` fails with `(eval):1: == not found`. Quote separators: `echo "---"`.
-- `grep`'s `--include`/`--exclude` globs must be quoted (`--include='*.ts'`). Unquoted, zsh tries to expand them and the command dies with `(eval):1: no matches found: --include=*.ts`.
 - A heredoc after a pipe feeds the **last** command in the pipeline: `gh pr create --body-file - 2>&1 | tail -3 <<'BODY'` gives the body to `tail`, leaving `gh` waiting on stdin until it times out. Write the body to a file and pass its path.
-- `sed` may or may not resolve to GNU `gsed` in Claude's tool shell (`gsed` was `command not found` in one session, the alias loaded in another); for multi-file or in-place edits use a quoted `python3 - <<'PY'` heredoc rather than relying on either. Use `/usr/bin/sed` for BSD syntax.
 - An **unquoted** heredoc (`python3 - <<PY`) command-substitutes backticks in its body, so an edit script containing a markdown `` `snippet` `` silently loses it or dies with "command not found". Always quote the delimiter: `<<'PY'`.
-- A `\u0000`-style escape written inside a heredoc becomes a **real control character** in the tool call, and the Bash tool refuses the whole command ("command contains control characters"). Use the Write tool for that file, or build the character in code (`String.fromCharCode(0)`).
-- Neither `timeout` nor `gtimeout` is installed on this machine (`command not found`), so a command needing a deadline must carry its own (`curl --max-time`, `AbortSignal.timeout`, the Bash tool's `timeout` param). BSD `cat` also has no `-A`.
-- An unmatched glob aborts the whole command in zsh (`no matches found`), so `rm -f "$dir"/*.png && …` dies when no PNGs exist and the rest of the `&&` chain never runs. Use `find "$dir" -name '*.png' -delete`.
-- zsh does not word-split unquoted `$var`: `F="a.ts b.ts"; npx eslint $F` passes ONE path ("No files matching the pattern"). Use an array — `F=(a.ts b.ts); npx eslint "${F[@]}"`.
-- `?` is a glob too: an unquoted URL with a query string (`for u in https://…?lang=da`) dies with `no matches found`. Single-quote URLs.
 - zsh treats `:r`, `:h`, `:t`, `:e` after a bare `$var` as filename modifiers, so `git push origin "$sha:refs/heads/main"` silently mangles the refspec (`…efs/heads/main does not match any`). Brace it: `"${sha}:refs/heads/main"`.
 - In zsh, `local var` on a name already set in that scope **prints** `var=value` instead of redeclaring silently, so a loop that re-runs `local x; x=$(…)` leaks lines into the output. Declare locals once, before the loop.
 - Under `bash -e` (GitHub Actions' default `run:` shell), a failure anywhere in an `&&` list except the last command does not stop the script: `test -n "$a" && test -n "$b"` lets an empty `$a` through. Put one guard per line.
 - `git grep -E` has no `\b`: a pattern using it silently matches nothing. Use `-w` for whole words, or `([^A-Za-z]|$)` as the boundary.
-- zsh-only parameter expansion (`${=var}`, `${(@f)$(…)}`) makes the Bash tool's safety check refuse the command as unparseable ("could not be checked for dangerous rm operations"). Use plain loops, `bash -c '…'`, or `git diff --name-only -z | xargs -0 git add --`.
 - `${PIPESTATUS[0]}` is empty in zsh, so an exit code checked through a pipe reads as blank. Run the command unpiped (`cmd >/dev/null 2>&1; echo "x=$?"`).
 - Bash calls sent in the same response can share a working directory, so a `cd` in one can leak into the other. Use `git -C`/absolute paths, or run per-repo commands one after another.
 
