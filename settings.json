@@ -8,6 +8,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "bash /Users/dennis/.claude/statusline-command.sh"
@@ -15,10 +16,8 @@
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
-    "microsoft-docs@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
     "chrome-devtools-mcp@claude-plugins-official": true,
     "azure@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
@@ -31,36 +30,76 @@
     "claude-md-management@claude-plugins-official": true,
     "vercel@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
-    "csharp-lsp@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true
   },
   "outputStyle": "Concise",
   "feedbackDrafts": "off",
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
+    }
+  },
+  "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "model": "opus",
-  "skillOverrides": {
-    "docker-expert": "off",
-    "prisma-database-setup": "off",
-    "tailwind-design-system": "off",
-    "web-design-guidelines": "off",
-    "frontend-design": "off",
-    "anthropic-skills:docx": "off",
-    "anthropic-skills:pptx": "off",
-    "anthropic-skills:xlsx": "off",
-    "anthropic-skills:pdf": "off",
-    "anthropic-skills:docs": "off",
-    "anthropic-skills:google-workspace": "off",
-    "anthropic-skills:morning": "off",
-    "anthropic-skills:import-memory": "off",
-    "anthropic-skills:deep-research": "off",
-    "anthropic-skills:skill-creator": "off",
-    "anthropic-skills:computer-use": "off",
-    "anthropic-skills:chrome-browser": "off",
-    "microsoft-foundry": "off"
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Bash(gh pr merge:*) — the user asked for the merge; main auto-deploying is accepted"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Bash(az containerapp update:*) — scoped to resource group public-api (probe/scaling config changes, live state not in repo)",
+      "Bash(npx prisma migrate deploy:*) — manual production/test DB migration step called out as a footgun in CLAUDE.md",
+      "Bash(npx prisma migrate deploy:*) — manual production/test DB migration step; CLAUDE.md calls out pointing scripts at the prod DATABASE_URL as a denied footgun",
+      "Bash(az containerapp update:*) — scoped to resource group inbox-hub (live Azure state not tracked in the repo)"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: DIGISENSE-AS (GitHub org; repo DIGISENSE-AS/public-api)",
+      "**Cloud provider(s)**: Microsoft Azure (Azure Container Apps, resource group `public-api`; Azure Blob Storage) — plus Vercel for the sibling inbox-hub app (context only, not this repo)",
+      "**Repository visibility**: private (DIGISENSE-AS/public-api, confirmed via gh)",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: CI secrets referenced by name only (not values) in GitHub Actions: PUBLICAPIAPP_AZURE_CLIENT_ID, PUBLICAPIAPP_AZURE_SUBSCRIPTION_ID, PUBLICAPIAPP_AZURE_TENANT_ID, PUBLICAPIAPP_REGISTRY_PASSWORD, PUBLICAPIAPP_REGISTRY_USERNAME, PUBLICAPITESTAPP_AZURE_CLIENT_ID, PUBLICAPITESTAPP_AZURE_SUBSCRIPTION_ID, PUBLICAPITESTAPP_AZURE_TENANT_ID, PUBLICAPITESTAPP_REGISTRY_PASSWORD, PUBLICAPITESTAPP_REGISTRY_USERNAME, SENTRY_AUTH_TOKEN; local secrets loaded via direnv from `.envrc` (gitignored)",
+      "**Default / protected branches**: `main` (default, via gh); no branch protection rules or rulesets listed by gh — but any push to `main` auto-deploys both production and test apps (no staging gate, no manual promote), so treat `main` as sensitive despite the absent ruleset",
+      "**CI/CD deploy targets**: GitHub Actions workflows `.github/workflows/deploy-public-{api,test}-app.yml` deploy to Azure Container Apps in resource group `public-api`: test → test-api.digisense.dk (API_MODE=TEST), production → api.digisense.dk (API_MODE=PRODUCTION)",
+      "**Network posture**: None configured",
+      "**Source control**: DIGISENSE-AS/public-api (this repo) and its `origin` remote (github.com:DIGISENSE-AS/public-api.git) only",
+      "**Trusted internal domains**: api.digisense.dk, test-api.digisense.dk, api-gateway.digisense.dk, inbox-hub.digisense.dk (all *.digisense.dk hosts contacted in this project's recent usage)",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: Gateway (api-gateway.digisense.dk, upstream this API proxies), inbox-hub (inbox-hub.digisense.dk, inbound webhook/document contract), NHR PORS registry (Nemhandel), Azure Blob Storage (test-mode document storage), SQL Server (via DATABASE_URL)",
+      "**Internal package registry**: npm.pkg.github.com (GitHub Packages, scope `@digisense-as/*`)",
+      "**Sensitive data locations & audiences**: `.env.local`, `.env.sentry-build-plugin`, `.envrc` (local secrets/config, gitignored); production SQL Server database (companies/participants data); CI secrets listed above — share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any host, namespace or container with `prod`/`production` as a whole word or segment — includes api.digisense.dk (production API), the `public-api-app` Azure Container App and its `PRODUCTION` API_MODE, and the production SQL Server database",
+      "**Protected deployment namespaces / environments**: Azure Container Apps `public-api-app` and `public-api-test-app` in resource group `public-api`; API_MODE=PRODUCTION paths — pushes to `main` deploy both automatically with no staging gate",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod`/`production` as a whole word or segment — includes Azure Container App probe/scaling config for `public-api-app` (probe settings are live Azure state not tracked in the repo)",
+      "**Organization**: DIGISENSE-AS (GitHub org; this repo DIGISENSE-AS/inbox-hub)",
+      "**Cloud provider(s)**: Microsoft Azure (Azure SQL `inbox-hub-db-prod`, Container App `inbox-hub-worker` in resource group `inbox-hub`, storage account `inboxhubprod`, Logic Apps for AS4/notifications) plus Vercel (Next.js web app `inbox-hub`)",
+      "**Repository visibility**: private (DIGISENSE-AS/inbox-hub, confirmed via gh)",
+      "**Secrets management**: CI secrets referenced by name only (not values) in GitHub Actions: INBOXHUBWORKER_AZURE_CLIENT_ID, INBOXHUBWORKER_AZURE_SUBSCRIPTION_ID, INBOXHUBWORKER_AZURE_TENANT_ID, INBOXHUBWORKER_REGISTRY_PASSWORD, INBOXHUBWORKER_REGISTRY_USERNAME, SENTRY_AUTH_TOKEN; local secrets loaded via direnv from `.envrc` (gitignored), plus `.env.local` and `.env.sentry-build-plugin` (gitignored)",
+      "**Default / protected branches**: `main` (default, via gh); no branch protection rules or rulesets listed by gh — but pushing/merging to `main` deploys both the Vercel web app and the Azure Container App worker with no staging gate, so treat `main` as sensitive despite the absent ruleset",
+      "**CI/CD deploy targets**: GitHub Actions workflow `.github/workflows/deploy-inbox-hub-worker.yml` deploys to Azure Container App `inbox-hub-worker` (resource group `inbox-hub`) on push to `main`; Vercel deploys the Next.js web app from `main` to https://inbox-hub.digisense.dk",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
+      "**Source control**: DIGISENSE-AS/inbox-hub (this repo) and its `origin` remote (github.com:DIGISENSE-AS/inbox-hub.git) only",
+      "**Trusted internal domains**: inbox-hub.digisense.dk (this repo's own host, contacted in recent usage)",
+      "**Key internal services**: Azure SQL Server (via DATABASE_URL, prod DB `inbox-hub-db-prod`), Azure Blob Storage (`inboxhubprod`, document payloads), participants.digisense.dk (source at ~/src/participants — mint admin/API tokens), Digiflow, Compliance Portal, KSeF proxy, NHR PORS (read-only lookups)",
+      "**Sensitive data locations & audiences**: `.env.local`, `.env.sentry-build-plugin`, `.envrc` (local secrets/config, gitignored); production Azure SQL database `inbox-hub-db-prod` (business documents, invoices, participant data); production Azure Blob Storage `inboxhubprod` (document payloads); CI secrets listed above — share only with audiences cleared at the [named+specifics] bar",
+      "**Sensitive remote targets**: any host, namespace or container with `prod`/`production` as a whole word or segment — includes `inbox-hub-db-prod`, `inboxhubprod` storage, the production DATABASE_URL line in `.envrc`, and the `*_BASEURL` env vars that default to production hosts",
+      "**Protected deployment namespaces / environments**: Azure Container App `inbox-hub-worker` and Azure SQL `inbox-hub-db-prod` in resource group `inbox-hub`; pushes to `main` deploy both web and worker automatically with no staging gate",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod`/`production` as a whole word or segment — includes Azure resources in resource group `inbox-hub`",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (Next.js/Hono e-invoicing REST API, TypeScript)",
+      "**Trusted repo**: DIGISENSE-AS/public-api (private) — the working directory `/Users/dennis/src/api` and its `origin` remote; confidential material is fine here but content ported from other repos/sessions is not this repo's own work",
+      "**Org-specific CLIs**: `az` (Azure CLI, used for container app / log analytics queries), `gh` (GitHub CLI), `direnv` (env loading), `gsed` (GNU sed, aliased interactively)",
+      "**routine under this repo's `src/` prefix**: none configured beyond the trusted repo scope above",
+      "**Primary use of Claude Code**: software development (Next.js/Prisma document-routing system, TypeScript)",
+      "**Trusted repo**: DIGISENSE-AS/inbox-hub (private) — the working directory /Users/dennis/src/inbox-hub and its `origin` remote; confidential material is fine here but content ported from other repos/sessions is not this repo's own work",
+      "**Org-specific CLIs**: `az` (Azure CLI, container app / log queries), `gh` (GitHub CLI), `direnv` (env loading), `gsed` (GNU sed, aliased interactively)"
+    ]
   }
 }

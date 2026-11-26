@@ -69,6 +69,11 @@ Nothing to fix → skip to step 7 (report "clean").
   `package.json`. If `package.json` changed, `overrides`/`resolutions`
   appeared, or anything else moved, revert that project
   (`git checkout -- <files>`) and report it.
+- **Reject downgrades.** Compare every direct dependency's installed version
+  before and after (`git show HEAD:<lockfile>` vs the new one). `npm audit fix`
+  can pick a *lower* in-range version that dodges one advisory's range but is
+  still vulnerable via another (it moved `@sentry/nextjs` 10.76.2 → 10.76.1).
+  Instead, move it forward in range with `npm update <pkg>`, and re-audit.
 - **Keep lockstep families aligned.** `npm audit fix` bumps only what the
   advisory chain touches, so it can move `prisma` and leave `@prisma/client`
   behind. If it bumped any direct dependency in a family, move every direct
